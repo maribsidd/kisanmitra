@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}KisanMitra – Smart Farming{% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-tag">🌾 Smart Farming Platform</div>
+      <h1>Empower Every <span class="accent">Farmer</span> with Technology</h1>
+      <p>KisanMitra connects farmers with data-driven crop advisories and a direct marketplace — eliminating middlemen, boosting income.</p>
+      <div class="hero-btns">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-gold btn-lg">Get Started Free →</a>
+        <a href="{{ url_for('market.index') }}"  class="btn btn-ghost btn-lg">Browse Market</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats-bar">
+  <div class="container">
+    <div class="stat-item"><div class="val">👨‍🌾 {{ stats.farmers }}</div><div class="lbl">Farmers Registered</div></div>
+    <div class="stat-item"><div class="val">🌾 {{ stats.listings }}</div><div class="lbl">Crop Listings</div></div>
+    <div class="stat-item"><div class="val">📦 {{ stats.orders }}</div><div class="lbl">Orders Fulfilled</div></div>
+    <div class="stat-item"><div class="val">💰 {{ stats.savings }}</div><div class="lbl">Avg Extra Income vs Middlemen</div></div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header">
+      <h2>How KisanMitra Works</h2>
+      <p>Four pillars that transform farming from guesswork to precision</p>
+    </div>
+    <div class="grid-4">
+      <div class="card feature-card">
+        <div class="feature-icon">🎙️</div>
+        <h3>Voice Interface</h3>
+        <p>Interact in Hindi, Marathi, Punjabi and more — no literacy barriers.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">🌱</div>
+        <h3>IoT Farm Check</h3>
+        <p>Agent-led sensor visits provide real soil data and tailored recommendations.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Predictive Analytics</h3>
+        <p>AI insights on water, fertilizer needs and next-season crop predictions.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon">🛒</div>
+        <h3>Direct Marketplace</h3>
+        <p>List crops and sell directly to buyers — zero middlemen, better prices.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Free vs Premium -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Start Free, Upgrade When Ready</h2>
+      <p>No credit card needed to get started. Unlock premium features as you grow.</p>
+    </div>
+    <div class="grid-2" style="max-width:860px;margin:0 auto;align-items:start">
+      <div class="card" style="border:2px solid var(--gray-200)">
+        <div style="font-size:28px;margin-bottom:10px">🌱</div>
+        <h3 style="margin-bottom:6px">Free Plan</h3>
+        <div style="font-size:28px;font-weight:800;color:var(--green);margin-bottom:16px">₹0 <span style="font-size:14px;color:var(--gray-400);font-weight:400">forever</span></div>
+        <ul class="pricing-features">
+          <li>✅ Register and browse marketplace</li>
+          <li>✅ Up to 3 active crop listings</li>
+          <li>✅ Buy crops from other farmers</li>
+          <li>✅ Basic dashboard</li>
+          <li>❌ Farm Advisory (IoT sensor check)</li>
+          <li>❌ Price trend analytics</li>
+          <li>❌ Priority support</li>
+        </ul>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-full">Start for Free</a>
+      </div>
+      <div class="card" style="border:2px solid var(--green)">
+        <div style="font-size:28px;margin-bottom:10px">🌳</div>
+        <h3 style="margin-bottom:6px">Paid Plans</h3>
+        <div style="font-size:28px;font-weight:800;color:var(--green);margin-bottom:16px">₹500+ <span style="font-size:14px;color:var(--gray-400);font-weight:400">/month</span></div>
+        <ul class="pricing-features">
+          <li>✅ Everything in Free</li>
+          <li>✅ Up to 50–unlimited listings</li>
+          <li>✅ Farm Advisory IoT sensor visits</li>
+          <li>✅ Soil health + crop recommendations</li>
+          <li>✅ Market price trend charts</li>
+          <li>✅ Priority agent assignment</li>
+          <li>✅ Dedicated support</li>
+        </ul>
+        <a href="{{ url_for('main.pricing') }}" class="btn btn-primary btn-full">View All Plans →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured listings -->
+<section class="section section-alt">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px">
+      <div>
+        <h2 style="font-size:28px">Fresh from Farms</h2>
+        <p style="color:var(--gray-400);margin-top:6px">Direct from farmers, zero middlemen</p>
+      </div>
+      <a href="{{ url_for('market.index') }}" class="btn btn-outline">View All →</a>
+    </div>
+    {% if crops %}
+      <div class="grid-3">
+        {% for c in crops %}
+          <a href="{{ url_for('market.detail', crop_id=c.id) }}" style="text-decoration:none">
+            <div class="card crop-card">
+              <div class="crop-img crop-img-{{ c.category }}">
+                {{ c.category_emoji }}
+                <span class="crop-tag cat-{{ c.category }}">{{ c.category }}</span>
+                {% if c.is_organic %}<span class="crop-organic">🌿 Organic</span>{% endif %}
+              </div>
+              <div class="crop-body">
+                <div class="crop-name">{{ c.name }}</div>
+                <div class="crop-meta">
+                  <span>📍 {{ c.location or 'India' }}</span>
+                  <span>{{ c.quantity }} kg</span>
+                </div>
+                <div class="crop-price">₹{{ c.price_per_kg }}<span>/kg</span></div>
+                <div class="crop-farmer">👨‍🌾 {{ c.farmer.name }}</div>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state"><div class="e-icon">🌾</div><p>No listings yet. <a href="{{ url_for('auth.register') }}" style="color:var(--green)">Be the first farmer!</a></p></div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <h2>Ready to Transform Your Farm?</h2>
+    <p>Join thousands of farmers earning more with KisanMitra.</p>
+    <div class="cta-btns">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-gold btn-lg">Register Free</a>
+      <a href="{{ url_for('market.index') }}"  class="btn btn-lg btn-ghost">Explore Market</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

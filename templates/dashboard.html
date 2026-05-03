@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page">
+<div class="container">
+  <div class="page-header">
+    <h1>🌾 Welcome, {{ current_user.name.split()[0] }}!</h1>
+    <p>{{ current_user.plan_label }} Plan &nbsp;·&nbsp; {{ current_user.role.capitalize() }}</p>
+  </div>
+
+  <!-- Upgrade banner for free users -->
+  {% if not current_user.is_premium %}
+  <div class="upgrade-banner">
+    <div>
+      <h3>🔒 Unlock Premium Features</h3>
+      <p>Get IoT farm advisory, unlimited listings, price analytics and more.</p>
+    </div>
+    <a href="{{ url_for('main.pricing') }}" class="btn btn-gold">View Plans →</a>
+  </div>
+  {% endif %}
+
+  <!-- Stat cards -->
+  <div class="grid-4" style="margin-bottom:28px">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#E8F5EE">🌾</div>
+      <div><div class="stat-val text-green">{{ listings|length }}</div><div class="stat-lbl">My Listings</div></div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#DBEAFE">📦</div>
+      <div><div class="stat-val" style="color:#2563EB">{{ (orders|length) + (sales|length) }}</div><div class="stat-lbl">Total Orders</div></div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#FEF3C7">💰</div>
+      <div><div class="stat-val" style="color:#D97706">₹{{ '{:,.0f}'.format(total_revenue) }}</div><div class="stat-lbl">Revenue Earned</div></div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:#EDE9FE">📊</div>
+      <div><div class="stat-val" style="color:#7C3AED">{{ reports|length }}</div><div class="stat-lbl">Farm Reports</div></div>
+    </div>
+  </div>
+
+  <!-- Chart + Quick actions -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:24px">
+    <div class="card">
+      <h3 style="margin-bottom:18px;font-size:16px">
+        📈 Market Price Trends (₹/kg)
+        {% if not current_user.is_premium %}
+          <span style="font-size:12px;color:var(--gray-400);margin-left:8px">🔒 Premium</span>
+        {% endif %}
+      </h3>
+      {% if current_user.is_premium %}
+        <canvas id="priceChart" height="90"></canvas>
+      {% else %}
+        <div style="height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--gray-100);border-radius:10px;color:var(--gray-400)">
+          <div style="font-size:36px;margin-bottom:10px">🔒</div>
+          <p style="font-size:14px">Price analytics unlocked with paid plans.</p>
+          <a href="{{ url_for('main.pricing') }}" class="btn btn-primary btn-sm" style="margin-top:12px">Upgrade</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:18px;font-size:16px">⚡ Quick Actions</h3>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <a href="{{ url_for('market.list_crop') }}" class="btn btn-primary">➕ List a Crop</a>
+        <a href="{{ url_for('advisory.index') }}" class="btn btn-outline">
+          🌿 Farm Advisory {% if not current_user.is_premium %}<span style="font-size:11px">🔒</span>{% endif %}
+        </a>
+        <a href="{{ url_for('market.index') }}" class="btn btn-outline">🛒 Browse Market</a>
+        <a href="{{ url_for('account.orders') }}" class="btn btn-outline">📦 My Orders</a>
+      </div>
+
+      <hr class="divider"/>
+      <div style="font-size:13px;color:var(--gray-400)">
+        <strong style="color:var(--gray-600)">Plan:</strong> {{ current_user.plan_label }}<br/>
+        <strong style="color:var(--gray-600)">Listings:</strong> {{ listings|selectattr('status','eq','available')|list|length }} / {{ current_user.listing_limit }}<br/>
+        {% if current_user.is_premium %}
+        <strong style="color:var(--gray-600)">Advisory:</strong> {{ reports|length }} / {{ current_user.advisory_limit }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Listings table -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h3 style="font-size:16px">🌾 My Listings</h3>
+      <a href="{{ url_for('market.list_crop') }}" class="btn btn-primary btn-sm">➕ Add Crop</a>
+    </div>
+    {% if listings %}
+      <table>
+        <thead><tr><th>Crop</th><th>Category</th><th>Qty (kg)</th><th>Price/kg</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for c in listings %}
+          <tr>
+            <td><strong>{{ c.name }}</strong></td>
+            <td style="text-transform:capitalize">{{ c.category }}</td>
+            <td>{{ c.quantity }}</td>
+            <td style="font-weight:700;color:var(--green)">₹{{ c.price_per_kg }}</td>
+            <td>
+              <span class="badge {% if c.status=='available' %}badge-green{% elif c.status=='sold' %}badge-red{% else %}badge-gold{% endif %}">
+                {{ c.status }}
+              </span>
+            </td>
+            <td>
+              <form method="POST" action="{{ url_for('market.delete_crop', crop_id=c.id) }}" style="display:inline">
+                <button class="btn btn-danger btn-sm" data-confirm="Remove this listing?">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">
+        <div class="e-icon">🌱</div>
+        <p>No listings yet. <a href="{{ url_for('market.list_crop') }}" style="color:var(--green)">Add your first crop!</a></p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if current_user.is_premium %}
+<script>
+const ctx = document.getElementById("priceChart").getContext("2d");
+new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: {{ price_trends.labels | tojson }},
+    datasets: [
+      { label:"Wheat",  data: {{ price_trends.wheat  | tojson }}, borderColor:"#F4A716", tension:0.4, pointRadius:3, fill:false },
+      { label:"Rice",   data: {{ price_trends.rice   | tojson }}, borderColor:"#2E8B57", tension:0.4, pointRadius:3, fill:false },
+      { label:"Tomato", data: {{ price_trends.tomato | tojson }}, borderColor:"#EF4444", tension:0.4, pointRadius:3, fill:false },
+    ]
+  },
+  options: {
+    plugins:{ legend:{ position:"bottom", labels:{ boxWidth:12, font:{ size:12 } } } },
+    scales:{ y:{ beginAtZero:false, ticks:{ font:{ size:11 } } }, x:{ ticks:{ font:{ size:11 } } } }
+  }
+});
+</script>
+{% endif %}
+{% endblock %}

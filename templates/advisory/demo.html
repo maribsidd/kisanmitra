@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Advisory Preview{% endblock %}
+{% block content %}
+<div class="page">
+<div class="container" style="max-width:780px">
+  <div class="page-header">
+    <h1>🌿 Farm Advisory – Preview</h1>
+    <p>Here's what a completed Farm Check report looks like. Upgrade to get real sensor data for your farm.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;border:2px dashed var(--green-pale)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:3px">Farm Check #000001 (Sample)</div>
+        <div style="font-size:13px;color:var(--gray-400)">Completed 15 May 2024 · Agent: Suresh Patil</div>
+      </div>
+      <span class="advisory-status" style="background:#10B98122;color:#10B981">completed</span>
+    </div>
+
+    <div class="sensor-grid">
+      {% for icon, label, val in [('🧪','Soil pH','6.8'),('🌿','Nitrogen','35 ppm'),('🌡️','Phosphorus','22 mg/kg'),('💧','Moisture','48%'),('🌡️','Temperature','27°C')] %}
+      <div class="sensor-item">
+        <div class="s-icon">{{ icon }}</div>
+        <div class="s-lbl">{{ label }}</div>
+        <div class="s-val">{{ val }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="background:var(--green-pale);border-radius:12px;padding:16px;margin-top:12px">
+      <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:12px">💡 Sample Recommendations</div>
+      <div class="rec-grid">
+        <div class="rec-item"><div class="r-lbl">💧 Water</div><div class="r-val">Moisture adequate – skip irrigation this week.</div></div>
+        <div class="rec-item"><div class="r-lbl">🌿 Fertilizer</div><div class="r-val">Nitrogen sufficient. Avoid over-fertilization.</div></div>
+        <div class="rec-item"><div class="r-lbl">🌾 Next Crop</div><div class="r-val">Recommended: Maize, Soybean (neutral pH is ideal).</div></div>
+        <div class="rec-item"><div class="r-lbl">📝 Notes</div><div class="r-val">Soil pH 6.8 – pH is optimal, no correction needed.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="upgrade-banner">
+    <div>
+      <h3>🔒 Get Real Data for Your Farm</h3>
+      <p>An agent visits your farm with portable IoT sensors and generates this report for your actual soil.</p>
+    </div>
+    <a href="{{ url_for('main.pricing') }}" class="btn btn-gold">Upgrade Now →</a>
+  </div>
+</div>
+</div>
+{% endblock %}

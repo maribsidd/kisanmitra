@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}List a Crop{% endblock %}
+{% block content %}
+<div class="page">
+<div class="container" style="max-width:580px">
+  <div class="page-header">
+    <h1>🌾 List Your Crop</h1>
+    <p>Add your harvest to the marketplace and connect with buyers directly.</p>
+  </div>
+
+  {% if not current_user.is_premium %}
+  <div style="background:var(--gold-pale);border:1px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px">
+    🌱 <strong>Free Plan:</strong> You can have up to <strong>{{ current_user.listing_limit }} active listings</strong>.
+    <a href="{{ url_for('main.pricing') }}" style="color:var(--green-mid);font-weight:600">Upgrade for more →</a>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <form method="POST">
+      <div class="form-group">
+        <label>Crop Name *</label>
+        <input type="text" name="name" placeholder="e.g. Organic Tomatoes" required/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <select name="category" required>
+            {% for c in ['vegetable','fruit','grain','pulse','spice','other'] %}
+              <option value="{{ c }}" style="text-transform:capitalize">{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" name="location" placeholder="District, State"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity (kg) *</label>
+          <input type="number" name="quantity" id="qty" placeholder="e.g. 500" required min="1" oninput="calcPreview()"/>
+        </div>
+        <div class="form-group">
+          <label>Price per kg (₹) *</label>
+          <input type="number" name="price_per_kg" id="price" placeholder="e.g. 25" required min="1" oninput="calcPreview()"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3" placeholder="Describe quality, harvest date, farming method..."></textarea>
+      </div>
+      <label class="form-check" style="margin-bottom:20px">
+        <input type="checkbox" name="is_organic" value="1"/>
+        🌿 This is organically grown
+      </label>
+
+      <!-- Earnings preview -->
+      <div id="preview" style="display:none;background:var(--green-pale);border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:14px">
+        <strong>Estimated Earnings Preview</strong>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;flex-wrap:wrap;gap:6px">
+          <span>Gross: ₹<span id="gross">0</span></span>
+          <span style="color:var(--gray-600)">Platform (5%): -₹<span id="fee">0</span></span>
+          <span style="font-weight:700;color:var(--green)">Net: ₹<span id="net">0</span></span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" style="padding:13px">🌾 List on Marketplace</button>
+    </form>
+  </div>
+</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function calcPreview() {
+  const qty = parseFloat(document.getElementById('qty').value)||0;
+  const price = parseFloat(document.getElementById('price').value)||0;
+  if (qty && price) {
+    const gross = qty * price;
+    const fee   = Math.round(gross * 0.05);
+    document.getElementById('gross').textContent = gross.toLocaleString('en-IN');
+    document.getElementById('fee').textContent   = fee.toLocaleString('en-IN');
+    document.getElementById('net').textContent   = (gross - fee).toLocaleString('en-IN');
+    document.getElementById('preview').style.display = 'block';
+  } else {
+    document.getElementById('preview').style.display = 'none';
+  }
+}
+</script>
+{% endblock %}

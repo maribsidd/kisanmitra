@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}My Orders{% endblock %}
+{% block content %}
+<div class="page">
+<div class="container">
+  <div class="page-header">
+    <h1>📦 Orders</h1>
+    <p>Track your purchases and sales</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('bought', this)">🛒 Purchased ({{ bought|length }})</button>
+    <button class="tab-btn"        onclick="switchTab('sold',   this)">🌾 Received  ({{ sold|length }})</button>
+  </div>
+
+  <!-- Purchased -->
+  <div id="bought" class="tab-pane">
+    {% if bought %}
+      {% for o in bought %}
+      <div class="card order-card">
+        <div class="order-header">
+          <div>
+            <div class="order-id">{{ o.crop.name }} × {{ o.quantity }} kg</div>
+            <div class="order-date">Order #{{ '%08d' % o.id }} · {{ o.created_at.strftime('%d %b %Y') }}</div>
+            <div style="font-size:13px;color:var(--gray-400);margin-top:3px">
+              Farmer: <strong>{{ o.seller.name }}</strong> · {{ o.seller.phone }}
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="order-amount">₹{{ '{:,.0f}'.format(o.total_amount) }}</div>
+            <div style="font-size:11px;color:var(--gray-400)">Platform: ₹{{ '{:,.0f}'.format(o.commission) }}</div>
+            <span class="advisory-status" style="background:{{ o.status_color }}22;color:{{ o.status_color }};margin-top:8px;display:inline-block">
+              {{ o.status }}
+            </span>
+          </div>
+        </div>
+        {% if o.delivery_city %}
+        <div class="order-address">
+          📍 {{ [o.delivery_city, o.delivery_state, o.delivery_pin] | select | join(', ') }}
+          &nbsp;·&nbsp; {{ o.payment_method | upper }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="e-icon">📦</div>
+        <p>No purchases yet. <a href="{{ url_for('market.index') }}" style="color:var(--green)">Browse the marketplace!</a></p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Sales received -->
+  <div id="sold" class="tab-pane" style="display:none">
+    {% if sold %}
+      {% for o in sold %}
+      <div class="card order-card">
+        <div class="order-header">
+          <div>
+            <div class="order-id">{{ o.crop.name }} × {{ o.quantity }} kg</div>
+            <div class="order-date">Order #{{ '%08d' % o.id }} · {{ o.created_at.strftime('%d %b %Y') }}</div>
+            <div style="font-size:13px;color:var(--gray-400);margin-top:3px">
+              Buyer: <strong>{{ o.buyer.name }}</strong> · {{ o.buyer.phone }}
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="order-amount">₹{{ '{:,.0f}'.format(o.total_amount) }}</div>
+            <div style="font-size:11px;color:var(--gray-400)">Your cut: ₹{{ '{:,.0f}'.format(o.total_amount - o.commission) }}</div>
+            <span class="advisory-status" style="background:{{ o.status_color }}22;color:{{ o.status_color }};margin-top:8px;display:inline-block">
+              {{ o.status }}
+            </span>
+          </div>
+        </div>
+        {% if o.delivery_city %}
+        <div class="order-address">
+          📍 Deliver to: {{ [o.delivery_city, o.delivery_state, o.delivery_pin] | select | join(', ') }}
+        </div>
+        {% endif %}
+
+        <!-- Status update for seller -->
+        {% if o.status not in ['delivered', 'cancelled'] %}
+        <form method="POST" action="{{ url_for('account.update_order_status', order_id=o.id) }}" style="margin-top:12px;display:flex;gap:10px;align-items:center">
+          <select name="status" style="width:auto;flex:1">
+            {% for st in ['pending','confirmed','dispatched','delivered','cancelled'] %}
+              <option value="{{ st }}" {% if st == o.status %}selected{% endif %}>{{ st | capitalize }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-primary btn-sm">Update</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="e-icon">🌾</div>
+        <p>No sales yet. <a href="{{ url_for('market.list_crop') }}" style="color:var(--green)">List a crop to start selling!</a></p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+</div>
+{% endblock %}

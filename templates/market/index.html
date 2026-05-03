@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Marketplace{% endblock %}
+{% block content %}
+<div class="page">
+<div class="container">
+  <!-- Market header -->
+  <div style="background:linear-gradient(135deg,var(--green),var(--green-mid));border-radius:16px;padding:32px;margin-bottom:28px;color:#fff">
+    <h1 style="font-size:26px;margin-bottom:8px">🛒 KisanMitra Marketplace</h1>
+    <p style="color:rgba(255,255,255,0.8);margin-bottom:20px">Buy fresh produce directly from farmers</p>
+    <form method="GET" style="display:flex;gap:12px;flex-wrap:wrap">
+      <input name="q" value="{{ q }}" placeholder="Search crops..." style="flex:1;min-width:180px;border:none;border-radius:10px;padding:11px 14px"/>
+      <input name="max_price" value="{{ max_price }}" type="number" placeholder="Max ₹/kg" style="width:120px;border:none;border-radius:10px;padding:11px 14px"/>
+      <button type="submit" class="btn btn-gold">🔍 Search</button>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('market.list_crop') }}" class="btn btn-ghost">➕ List Crop</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <div style="display:grid;grid-template-columns:200px 1fr;gap:24px">
+    <!-- Sidebar filters -->
+    <div>
+      <div class="sidebar-filter" style="margin-bottom:12px">
+        <div class="filter-title">Category</div>
+        {% for cat in ['all','vegetable','fruit','grain','pulse','spice','other'] %}
+          <a href="?category={{ cat }}&q={{ q }}&max_price={{ max_price }}&organic={{ organic }}" class="filter-btn {% if category==cat %}active{% endif %}">
+            {% if cat=='all' %}🌿 All{% else %}{{ cat }}{% endif %}
+          </a>
+        {% endfor %}
+      </div>
+      <div class="sidebar-filter">
+        <div class="filter-title">Filters</div>
+        <form method="GET">
+          <input type="hidden" name="q" value="{{ q }}"/>
+          <input type="hidden" name="category" value="{{ category }}"/>
+          <input type="hidden" name="max_price" value="{{ max_price }}"/>
+          <label class="form-check" style="margin-bottom:8px">
+            <input type="checkbox" name="organic" value="1" {% if organic=='1' %}checked{% endif %} onchange="this.form.submit()"/>
+            🌿 Organic Only
+          </label>
+        </form>
+      </div>
+    </div>
+
+    <!-- Crop grid -->
+    <div>
+      <div style="color:var(--gray-400);font-size:14px;margin-bottom:16px">{{ crops|length }} results</div>
+      {% if crops %}
+        <div class="grid-3">
+          {% for c in crops %}
+            <a href="{{ url_for('market.detail', crop_id=c.id) }}" style="text-decoration:none">
+              <div class="card crop-card">
+                <div class="crop-img crop-img-{{ c.category }}">
+                  {{ c.category_emoji }}
+                  <span class="crop-tag cat-{{ c.category }}">{{ c.category }}</span>
+                  {% if c.is_organic %}<span class="crop-organic">🌿</span>{% endif %}
+                </div>
+                <div class="crop-body">
+                  <div class="crop-name">{{ c.name }}</div>
+                  <div class="crop-meta">
+                    <span>📍 {{ c.location or 'India' }}</span>
+                    <span>{{ c.quantity }} kg</span>
+                  </div>
+                  <div class="crop-price">₹{{ c.price_per_kg }}<span>/kg</span></div>
+                  <div class="crop-farmer">👨‍🌾 {{ c.farmer.name }}</div>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="e-icon">🌾</div>
+          <p>No crops found. Try different filters.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

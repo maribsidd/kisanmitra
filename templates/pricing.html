@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Pricing{% endblock %}
+{% block content %}
+<div class="page">
+<div class="container">
+  <div class="section-header" style="margin-bottom:40px">
+    <h1 style="font-size:36px">Simple, Transparent Pricing</h1>
+    <p>Start free. Upgrade when your farm is ready to scale.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <!-- Free -->
+    <div class="pricing-card">
+      <div class="pricing-icon">🌱</div>
+      <h3>Free</h3>
+      <div class="pricing-price">₹0 <span>forever</span></div>
+      <div class="pricing-desc">Get started, no strings attached.</div>
+      <ul class="pricing-features">
+        <li>✅ Register & browse marketplace</li>
+        <li>✅ 3 active crop listings</li>
+        <li>✅ Buy from other farmers</li>
+        <li>✅ Basic dashboard</li>
+        <li>❌ Farm Advisory visits</li>
+        <li>❌ Price trend charts</li>
+        <li>❌ Priority support</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        {% if current_user.plan == 'free' %}
+          <span class="btn btn-outline btn-full" style="cursor:default;opacity:.6">Current Plan</span>
+        {% else %}
+          <form method="POST" action="{{ url_for('account.cancel_plan') }}">
+            <button class="btn btn-outline btn-full">Downgrade to Free</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-full">Start Free</a>
+      {% endif %}
+    </div>
+
+    <!-- Basic -->
+    <div class="pricing-card">
+      <div class="pricing-icon">🌿</div>
+      <h3>Basic</h3>
+      <div class="pricing-price">₹500 <span>/month</span></div>
+      <div class="pricing-desc">For small-scale farmers growing their reach.</div>
+      <ul class="pricing-features">
+        <li>✅ Everything in Free</li>
+        <li>✅ 10 active listings</li>
+        <li>✅ 1 Farm Advisory / month</li>
+        <li>✅ IoT soil sensor report</li>
+        <li>✅ Crop recommendations</li>
+        <li>❌ Price trend analytics</li>
+        <li>❌ Priority support</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        {% if current_user.plan == 'basic' %}
+          <span class="btn btn-primary btn-full" style="cursor:default;opacity:.7">Current Plan</span>
+        {% else %}
+          <form method="POST" action="{{ url_for('account.subscribe', plan='basic') }}">
+            <button class="btn btn-primary btn-full">Subscribe – ₹500/mo</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-full">Get Basic</a>
+      {% endif %}
+    </div>
+
+    <!-- Standard -->
+    <div class="pricing-card featured">
+      <div class="popular">Most Popular</div>
+      <div class="pricing-icon">🌳</div>
+      <h3>Standard</h3>
+      <div class="pricing-price">₹1,000 <span>/month</span></div>
+      <div class="pricing-desc">For growing farms that need full advisory.</div>
+      <ul class="pricing-features">
+        <li>✅ Everything in Basic</li>
+        <li>✅ 50 active listings</li>
+        <li>✅ 3 Farm Advisories / month</li>
+        <li>✅ Price trend analytics</li>
+        <li>✅ Crop health imaging</li>
+        <li>✅ Email support</li>
+        <li>❌ Dedicated agent</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        {% if current_user.plan == 'standard' %}
+          <span class="btn btn-primary btn-full" style="cursor:default;opacity:.7">Current Plan</span>
+        {% else %}
+          <form method="POST" action="{{ url_for('account.subscribe', plan='standard') }}">
+            <button class="btn btn-primary btn-full">Subscribe – ₹1,000/mo</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-full">Get Standard</a>
+      {% endif %}
+    </div>
+
+    <!-- Premium -->
+    <div class="pricing-card" style="border-color:var(--gold)">
+      <div class="pricing-icon">🏆</div>
+      <h3>Premium</h3>
+      <div class="pricing-price">₹1,500 <span>/month</span></div>
+      <div class="pricing-desc">For large farms and serious sellers.</div>
+      <ul class="pricing-features">
+        <li>✅ Everything in Standard</li>
+        <li>✅ Unlimited listings</li>
+        <li>✅ Unlimited Farm Advisories</li>
+        <li>✅ Dedicated field agent</li>
+        <li>✅ Brand partnership deals</li>
+        <li>✅ Priority support</li>
+        <li>✅ Early feature access</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        {% if current_user.plan == 'premium' %}
+          <span class="btn btn-gold btn-full" style="cursor:default;opacity:.7">Current Plan</span>
+        {% else %}
+          <form method="POST" action="{{ url_for('account.subscribe', plan='premium') }}">
+            <button class="btn btn-gold btn-full">Subscribe – ₹1,500/mo</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-gold btn-full">Get Premium</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- FAQ strip -->
+  <div style="margin-top:56px;max-width:680px;margin-left:auto;margin-right:auto">
+    <h2 style="text-align:center;margin-bottom:28px">Frequently Asked Questions</h2>
+    {% for q, a in [
+      ('Can I upgrade or downgrade anytime?', 'Yes. You can switch plans from the Pricing page at any time. Downgrading takes effect immediately.'),
+      ('Is there a free trial for paid plans?', 'Every account starts on the Free plan permanently. Upgrade whenever you feel ready.'),
+      ('What payment methods are accepted?', 'UPI, Net Banking, Debit/Credit cards via Razorpay (coming soon). Currently demo mode.'),
+      ('What happens to my listings if I downgrade?', 'Existing listings stay active. You just cannot add new ones beyond your plan limit.'),
+    ] %}
+    <div style="border-bottom:1px solid var(--gray-200);padding:16px 0">
+      <strong style="font-size:15px">{{ q }}</strong>
+      <p style="font-size:14px;color:var(--gray-600);margin-top:6px">{{ a }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+</div>
+{% endblock %}

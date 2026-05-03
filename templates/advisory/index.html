@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Farm Advisory{% endblock %}
+{% block content %}
+<div class="page">
+<div class="container">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;flex-wrap:wrap;gap:14px">
+    <div class="page-header" style="margin-bottom:0">
+      <h1>🌿 Farm Advisory</h1>
+      <p>IoT sensor-based soil analysis and crop recommendations</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span style="font-size:13px;color:var(--gray-400)">Used: <strong>{{ used }}</strong> / {{ limit }} this month</span>
+      {% if used < limit %}
+        <button onclick="document.getElementById('reqForm').style.display='block';this.style.display='none'" class="btn btn-primary">➕ Request Farm Check</button>
+      {% else %}
+        <a href="{{ url_for('main.pricing') }}" class="btn btn-gold">Upgrade for More</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Request form (hidden by default) -->
+  <div id="reqForm" style="display:none" class="card" style="margin-bottom:24px;border:2px solid var(--green-pale)">
+    <h3 style="margin-bottom:16px;font-size:16px">📅 Schedule a Farm Visit</h3>
+    <form method="POST" action="{{ url_for('advisory.request_check') }}" style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px">
+        <label>Preferred Date (optional)</label>
+        <input type="date" name="scheduled_date" min="{{ now.strftime('%Y-%m-%d') if now else '' }}"/>
+      </div>
+      <button type="submit" class="btn btn-primary">Confirm Request</button>
+      <button type="button" class="btn btn-outline" onclick="document.getElementById('reqForm').style.display='none'">Cancel</button>
+    </form>
+  </div>
+
+  <!-- How it works strip -->
+  <div class="grid-4" style="margin-bottom:32px">
+    {% for n, icon, title, desc in [
+      ('1','📱','Request','Submit a Farm Check request'),
+      ('2','🚗','Agent Visit','Agent visits with IoT sensors'),
+      ('3','📊','Analysis','Soil & crop data uploaded'),
+      ('4','💡','Advisory','Personalized recommendations'),
+    ] %}
+    <div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:26px;margin-bottom:8px">{{ icon }}</div>
+      <div style="font-weight:700;font-size:13px;color:var(--green);margin-bottom:5px">Step {{ n }}: {{ title }}</div>
+      <div style="font-size:12px;color:var(--gray-400)">{{ desc }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Reports -->
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:18px">My Farm Reports</h2>
+
+  {% if reports %}
+    {% for r in reports %}
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:{% if r.soil_ph %}16px{% else %}0{% endif %}">
+        <div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:3px">Farm Check #{{ '%06d' % r.id }}</div>
+          <div style="font-size:13px;color:var(--gray-400)">Requested {{ r.created_at.strftime('%d %b %Y') }}</div>
+          {% if r.scheduled_date %}
+          <div style="font-size:13px;color:var(--gray-400)">Scheduled {{ r.scheduled_date.strftime('%d %b %Y') }}</div>
+          {% endif %}
+        </div>
+        <span class="advisory-status" style="background:{{ r.status_color }}22;color:{{ r.status_color }}">{{ r.status }}</span>
+      </div>
+
+      {% if r.soil_ph %}
+      <div class="sensor-grid">
+        {% for icon, label, val in [
+          ('🧪','Soil pH', r.soil_ph),
+          ('🌿','Nitrogen', (r.nitrogen|string + ' ppm') if r.nitrogen else '—'),
+          ('🌡️','Phosphorus',(r.phosphorus|string + ' mg/kg') if r.phosphorus else '—'),
+          ('💧','Moisture', (r.moisture|string + '%') if r.moisture else '—'),
+          ('🌡️','Temp', (r.temperature|string + '°C') if r.temperature else '—'),
+        ] %}
+        <div class="sensor-item">
+          <div class="s-icon">{{ icon }}</div>
+          <div class="s-lbl">{{ label }}</div>
+          <div class="s-val">{{ val }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if r.rec_water %}
+      <div style="background:var(--green-pale);border-radius:12px;padding:16px;margin-top:12px">
+        <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:12px">💡 Recommendations</div>
+        <div class="rec-grid">
+          <div class="rec-item"><div class="r-lbl">💧 Water</div><div class="r-val">{{ r.rec_water }}</div></div>
+          <div class="rec-item"><div class="r-lbl">🌿 Fertilizer</div><div class="r-val">{{ r.rec_fertilizer }}</div></div>
+          <div class="rec-item"><div class="r-lbl">🌾 Next Crop</div><div class="r-val">{{ r.rec_next_crop }}</div></div>
+          <div class="rec-item"><div class="r-lbl">📝 Notes</div><div class="r-val">{{ r.rec_notes }}</div></div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div class="e-icon">🌱</div>
+      <p>No reports yet. Request your first Farm Check above!</p>
+    </div>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

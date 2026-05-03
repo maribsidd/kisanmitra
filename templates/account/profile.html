@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="page">
+<div class="container" style="max-width:680px">
+  <div class="page-header">
+    <h1>👤 My Profile</h1>
+    <p>Manage your account details and subscription</p>
+  </div>
+
+  <!-- Plan card -->
+  {% set plan_colors = {'free':'#4B6B5A','basic':'#ca8a04','standard':'#2563EB','premium':'#7C3AED'} %}
+  <div style="background:linear-gradient(135deg,{{ plan_colors[current_user.plan] }},{{ plan_colors[current_user.plan] }}bb);border-radius:14px;padding:22px 28px;margin-bottom:24px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-size:12px;opacity:.8;margin-bottom:4px">Current Plan</div>
+      <div style="font-size:22px;font-weight:800;font-family:'Poppins',sans-serif">
+        🌿 {{ current_user.plan_label }} Plan
+      </div>
+      {% if current_user.plan_expires %}
+      <div style="font-size:12px;opacity:.75;margin-top:4px">
+        Expires {{ current_user.plan_expires.strftime('%d %b %Y') }}
+      </div>
+      {% endif %}
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a href="{{ url_for('main.pricing') }}" class="btn btn-gold btn-sm">
+        {% if current_user.is_premium %}Change Plan{% else %}Upgrade{% endif %}
+      </a>
+      {% if current_user.is_premium %}
+      <form method="POST" action="{{ url_for('account.cancel_plan') }}">
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:#fff"
+          data-confirm="Cancel your subscription and move to Free plan?">Cancel Plan</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Limits summary -->
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card" style="padding:16px 20px">
+      <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">Active Listings</div>
+      <div style="font-size:22px;font-weight:800;color:var(--green)">
+        {{ current_user.crops | selectattr('status','eq','available') | list | length }}
+        <span style="font-size:14px;color:var(--gray-400);font-weight:400">/ {{ current_user.listing_limit }}</span>
+      </div>
+    </div>
+    <div class="card" style="padding:16px 20px">
+      <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">Advisory Checks / month</div>
+      <div style="font-size:22px;font-weight:800;color:var(--green-mid)">
+        {% if current_user.is_premium %}{{ current_user.advisory_limit }}{% else %}<span style="font-size:14px">🔒 Premium only</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile form -->
+  <div class="card">
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:22px">Personal Information</h3>
+    <form method="POST">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="name" value="{{ current_user.name }}" required/>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" value="{{ current_user.email or '' }}" placeholder="optional"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" value="{{ current_user.phone }}" disabled style="background:var(--gray-100);color:var(--gray-400)"/>
+        </div>
+        <div class="form-group">
+          <label>Language</label>
+          <select name="language">
+            {% for val, lbl in [('hi','Hindi'),('mr','Marathi'),('pa','Punjabi'),('te','Telugu'),('ta','Tamil'),('en','English')] %}
+              <option value="{{ val }}" {% if current_user.language == val %}selected{% endif %}>{{ lbl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:16px;color:var(--gray-600)">📍 Farm Location</h4>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>State</label>
+          <input type="text" name="state" value="{{ current_user.state or '' }}" placeholder="e.g. Maharashtra"/>
+        </div>
+        <div class="form-group">
+          <label>District</label>
+          <input type="text" name="district" value="{{ current_user.district or '' }}" placeholder="e.g. Nashik"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Village / Town</label>
+          <input type="text" name="village" value="{{ current_user.village or '' }}"/>
+        </div>
+        <div class="form-group">
+          <label>Farm Area (acres)</label>
+          <input type="number" name="farm_area" step="0.1" value="{{ current_user.farm_area or '' }}" placeholder="e.g. 5.5"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Soil Type</label>
+          <select name="soil_type">
+            <option value="">Select...</option>
+            {% for s in ['Black (Regur)','Red Laterite','Alluvial','Sandy','Clay','Loamy'] %}
+              <option value="{{ s }}" {% if current_user.soil_type == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Irrigation Type</label>
+          <select name="irrigation">
+            <option value="">Select...</option>
+            {% for i in ['Drip','Sprinkler','Flood','Rainwater','Borewell'] %}
+              <option value="{{ i }}" {% if current_user.irrigation == i %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:16px;color:var(--gray-600)">🔒 Change Password</h4>
+      <div class="form-group">
+        <label>New Password (leave blank to keep current)</label>
+        <input type="password" name="new_password" placeholder="Min. 6 characters" minlength="6"/>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" style="padding:12px;margin-top:8px">💾 Save Changes</button>
+    </form>
+  </div>
+
+  <!-- Danger zone -->
+  <div class="card" style="margin-top:20px;border:1px solid #fee2e2">
+    <h3 style="font-size:15px;color:var(--danger);margin-bottom:10px">⚠️ Account Info</h3>
+    <p style="font-size:13px;color:var(--gray-600)">
+      Member since {{ current_user.created_at.strftime('%d %b %Y') }} &nbsp;·&nbsp;
+      Role: <strong>{{ current_user.role | capitalize }}</strong> &nbsp;·&nbsp;
+      Phone: <strong>{{ current_user.phone }}</strong>
+    </p>
+  </div>
+
+</div>
+</div>
+{% endblock %}
